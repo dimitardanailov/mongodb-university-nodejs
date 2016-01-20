@@ -64,7 +64,7 @@ function queryDocument(options) {
  * Get information for firstYear, lastYear and number of employees from 
  * command line
  *
- * @example: node.app.js -f 2004 -l 2008 -e 100
+ * @example: node app.js -f 2004 -l 2008 -e 100
  */
 function commandLineOptions() {
 	const cli = commandLineArgs([
