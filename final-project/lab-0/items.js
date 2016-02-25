@@ -89,15 +89,26 @@ function ItemDAO(database) {
          *
          */
 
+				const cursor = this.getItemsByCategory(category, page, itemsPerPage);
+				cursor.toArray((err, categories) => {
+					assert.equal(err, null);
+
+					callback(categories);
+				});
+				
+				/*
         var pageItem = this.createDummyItem();
         var pageItems = [];
         for (var i=0; i<5; i++) {
             pageItems.push(pageItem);
         }
+				
+				console.log(pageItems);
 
         // TODO-lab1B Replace all code above (in this method).
 
         callback(pageItems);
+				*/
     }
 
 
@@ -285,6 +296,37 @@ function ItemDAO(database) {
 				]);
 
 				return cursor;
+		}
+
+		/**
+			* TODO-lab1B
+			*
+			* LAB #1B: 
+			* Create a query to select only the items that should be displayed for a particular
+			* page. For example, on the first page, only the first itemsPerPage should be displayed. 
+			* Use limit() and skip() and the method parameters: page and itemsPerPage to identify 
+			* the appropriate products. Pass these items to the callback function. 
+			*
+			* Do NOT sort items. 
+			*
+			* @param {String} category
+			* @param {Integer} page
+			* @param {Integer} itemsPerPage
+			*
+			*/
+		this.getItemsByCategory = function(category, page, itemsPerPage) {
+			const query = {};
+
+			if (category !== 'All') {
+				query['category'] = category;
+			}
+
+			const cursor = this.db.collection('item')
+				.find(query)
+				.skip(page)
+				.limit(itemsPerPage);
+
+			return cursor;
 		}
 }
 
