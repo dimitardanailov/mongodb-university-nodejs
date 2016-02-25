@@ -130,16 +130,18 @@ function ItemDAO(database) {
          */
 
 				const query = this.buildQueryFromCategory(category);
+				this.loadInformationForItemsPerPage(query, callback);
 
+				/*
 				const cursor = this.db.collection('item').find(query).count((err, numItems) => {
 						callback(numItems);
-				});
+				});*/
     }
 
 
     this.searchItems = function(query, page, itemsPerPage, callback) {
         "use strict";
-        
+
         /*
          * TODO-lab2A
          *
@@ -155,6 +157,20 @@ function ItemDAO(database) {
          *
          */
         
+				const fullTextSearchQuery = this.buildFullTextSearchQuery(query);
+				const cursor = this.buildPaginationCursor(
+						fullTextSearchQuery,
+						page,
+						itemsPerPage
+				);
+
+				cursor.toArray((err, categories) => {
+					assert.equal(err, null);
+
+					callback(categories);
+				});
+
+				/*
         var item = this.createDummyItem();
         var items = [];
         for (var i=0; i<5; i++) {
@@ -164,14 +180,13 @@ function ItemDAO(database) {
         // TODO-lab2A Replace all code above (in this method).
 
         callback(items);
+				*/
     }
 
 
     this.getNumSearchItems = function(query, callback) {
         "use strict";
 
-        var numItems = 0;
-        
         /*
         * TODO-lab2B
         *
@@ -180,8 +195,8 @@ function ItemDAO(database) {
         * to the callback function.
         *
         */
-
-        callback(numItems);
+				const fullTextSearchQuery = this.buildFullTextSearchQuery(query);
+				this.loadInformationForItemsPerPage(fullTextSearchQuery, callback);
     }
 
 
@@ -320,12 +335,7 @@ function ItemDAO(database) {
 			*/
 		this.getItemsByCategory = function(category, page, itemsPerPage) {
 			const query = this.buildQueryFromCategory(category);
-
-			const offset = page * itemsPerPage;
-			const cursor = this.db.collection('item')
-				.find(query)
-				.skip(offset)
-				.limit(itemsPerPage);
+			const cursor = this.buildPaginationCursor(query, page, itemsPerPage);
 
 			return cursor;
 		}
@@ -342,6 +352,50 @@ function ItemDAO(database) {
 			}
 
 			return query;
+		}
+
+		/**
+		 * We using title, slogan and description for our full text search.
+		 *
+		 * @param {String} query
+		 */
+		this.buildFullTextSearchQuery = function(query) {
+			const fullTextSearchQuery = {
+				'$text': {
+					'$search': query,
+					'$caseSensitive': false
+				}
+			};
+
+			return fullTextSearchQuery;
+		}
+
+		/**
+		 * Build cursor pagination query.
+		 *
+		 * @param {Object} query
+		 * @param {Integer} page
+		 * @param {Integer} itemsPerPage
+		 */
+		this.buildPaginationCursor = function(query, page, itemsPerPage) {
+			const offset = page * itemsPerPage;
+			const cursor = this.db.collection('item')
+				.find(query)
+				.skip(offset)
+				.limit(itemsPerPage);
+
+			return cursor;
+		}
+
+		/**
+		 *
+		 * @param {Object} query
+		 * @param {Function} callback
+		 */
+		this.loadInformationForItemsPerPage = function(query, callback) {
+			this.db.collection('item').find(query).count((err, numItems) => {
+					callback(numItems);
+			});
 		}
 }
 
