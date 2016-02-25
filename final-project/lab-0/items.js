@@ -18,7 +18,6 @@
 var MongoClient = require('mongodb').MongoClient,
     assert = require('assert');
 
-
 function ItemDAO(database) {
     "use strict";
 
@@ -43,17 +42,34 @@ function ItemDAO(database) {
         *
         */
 
-        var categories = [];
+				const cursor = this.getCursorTotalItemsForEachCategory();
+				const dbCategories = [];
+				cursor.toArray((err, categories) => {
+					assert.equal(err, null);
+
+					// Add information for total products.
+					dbCategories.push({
+						'_id': 'All',
+						'num': 0
+					});
+					categories.forEach((category) => {
+						dbCategories[0]['num'] += category.num;
+
+						dbCategories.push(category);
+					});
+
+					callback(dbCategories);
+				});
+
+				/*
         var category = {
             _id: "All",
             num: 9999
-        };
+        }; */
 
-        categories.push(category)
+        // categories.push(category)
 
         // TODO-lab1A Replace all code above (in this method).
-        
-        callback(categories);
     }
 
 
@@ -227,6 +243,49 @@ function ItemDAO(database) {
 
         return item;
     }
+
+		/**
+		* LAB #1A: 
+		* Create an aggregation query to return the total number of items in each category. The
+		* documents in the array output by your aggregation should contain fields for 
+		* "_id" and "num". HINT: Test your mongodb query in the shell first before implementing 
+		* it in JavaScript.
+		*
+		* Ensure categories are organized in alphabetical order before passing to the callback.
+		*
+		* Include a document for category "All" in the categories to pass to the callback. All
+		* should identify the total number of documents across all categories.
+		*/
+		this.getCursorTotalItemsForEachCategory = function() {
+				const cursor = this.db.collection('item').aggregate([
+						{		
+							$project: {
+								_id: 1,
+								title: 1,
+								category: 1
+							} 
+						}, 
+						{ 
+							$group: {
+								_id: '$category',
+								num: { $sum: 1 }
+							} 
+						}, 
+						{
+							$project: {
+								_id: 1,
+								num: 1
+							}
+						},
+						{
+							$sort: { 
+								_id : 1
+							}
+						}
+				]);
+
+				return cursor;
+		}
 }
 
 

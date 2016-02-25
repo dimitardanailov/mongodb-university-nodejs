@@ -9,13 +9,13 @@ db.item.aggregate([
 	{ 
 		$group: {
 			_id: '$category',
-			numberItems: { $sum: 1 }
+			num: { $sum: 1 }
 		} 
 	}, 
 	{
 		$project: {
 			_id: 1,
-			numberItems: 1
+			num: 1
 		}
 	},
 	{
