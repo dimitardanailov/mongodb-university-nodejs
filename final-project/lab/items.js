@@ -115,7 +115,7 @@ function ItemDAO(database) {
     this.getNumItems = function(category, callback) {
         "use strict";
         
-        var numItems = 0;
+        // var numItems = 0;
 
         /*
          * TODO-lab1C
@@ -128,8 +128,12 @@ function ItemDAO(database) {
          * getNumItems() method.
          *
          */
-        
-        callback(numItems);
+
+				const query = this.buildQueryFromCategory(category);
+
+				const cursor = this.db.collection('item').find(query).count((err, numItems) => {
+						callback(numItems);
+				});
     }
 
 
@@ -315,18 +319,29 @@ function ItemDAO(database) {
 			*
 			*/
 		this.getItemsByCategory = function(category, page, itemsPerPage) {
+			const query = this.buildQueryFromCategory(category);
+
+			const offset = page * itemsPerPage;
+			const cursor = this.db.collection('item')
+				.find(query)
+				.skip(offset)
+				.limit(itemsPerPage);
+
+			return cursor;
+		}
+
+		/**
+		 * If you category is equal to 'All' object will be empty.
+		 * @param {String} category
+		 */
+		this.buildQueryFromCategory = function(category) {
 			const query = {};
 
 			if (category !== 'All') {
 				query['category'] = category;
 			}
 
-			const cursor = this.db.collection('item')
-				.find(query)
-				.skip(page)
-				.limit(itemsPerPage);
-
-			return cursor;
+			return query;
 		}
 }
 
