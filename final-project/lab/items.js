@@ -210,12 +210,17 @@ function ItemDAO(database) {
          * to the callback function.
          *
          */
+				this.db.collection('item').findOne({ _id: itemId }, (err, item) => {
+					assert.equal(err, null);
+
+					callback(item);
+				});
         
-        var item = this.createDummyItem();
+        // var item = this.createDummyItem();
 
         // TODO-lab3 Replace all code above (in this method).
 
-        callback(item);
+        // callback(item);
     }
 
 
@@ -394,6 +399,8 @@ function ItemDAO(database) {
 		 */
 		this.loadInformationForItemsPerPage = function(query, callback) {
 			this.db.collection('item').find(query).count((err, numItems) => {
+					assert.equal(err, null);
+
 					callback(numItems);
 			});
 		}
