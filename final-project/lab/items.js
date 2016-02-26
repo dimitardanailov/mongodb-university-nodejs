@@ -223,7 +223,6 @@ function ItemDAO(database) {
         // callback(item);
     }
 
-
     this.getRelatedItems = function(callback) {
         "use strict";
 
@@ -247,7 +246,6 @@ function ItemDAO(database) {
          * "stars", and "date".
          *
          */
-
         var reviewDoc = {
             name: name,
             comment: comment,
@@ -255,9 +253,31 @@ function ItemDAO(database) {
             date: Date.now()
         }
 
+				const filter = {
+					"_id": itemId
+				};
+
+				const update = {
+					"$addToSet": {
+						"reviews": reviewDoc
+					}
+				};
+
+				const collectionRef = this.db.collection("item");
+				collectionRef.updateOne(filter, update, (err, results)  => {
+					assert.equal(err, null);
+
+					collectionRef.findOne(filter, (err, item) => {
+						assert.equal(err, null);
+
+						callback(item);
+					});
+				});
+
+				/*
         var dummyItem = this.createDummyItem();
         dummyItem.reviews = [reviewDoc];
-        callback(dummyItem);
+        callback(dummyItem); */
     }
 
 
